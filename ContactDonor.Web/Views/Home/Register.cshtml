@@ -1,0 +1,255 @@
+﻿
+<style>
+    textarea:focus,
+    select:focus,
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    input[type="datetime"]:focus,
+    input[type="datetime-local"]:focus,
+    input[type="date"]:focus,
+    input[type="month"]:focus,
+    input[type="time"]:focus,
+    input[type="week"]:focus,
+    input[type="number"]:focus,
+    input[type="email"]:focus,
+    input[type="url"]:focus,
+    input[type="search"]:focus,
+    input[type="tel"]:focus,
+    input[type="color"]:focus,
+    .uneditable-input:focus {
+        border-color: #081da3;
+        border-width: 2px;
+        box-shadow: none;
+        outline: 0 none;
+    }
+</style>
+<div class="container shadow-sm p-3 mb-5 bg-white rounded" style="margin-top:160px;">
+    <h6 class="text-center">
+        Register as a Donor <i class="fa fa-heart" aria-hidden="true"></i>
+    </h6>
+    <form class="mx-4 my-4 donor-registration-form" name="donor-registration-form" id="donor-registration-form">
+        <div class="form-row p-2">
+            <div class="col form-group">
+                <input type="text" name="firstname" class="form-control" id="firstname" placeholder="First name" required />
+            </div>
+            <div class="col form-group">
+                <input type="text" name="middlename" class="form-control" id="middlename" placeholder="Middle name" required />
+            </div>
+            <div class="col form-group">
+                <input type="text" class="form-control" name="lastname" id="lastname" placeholder="Last name" required />
+            </div>
+            <div class="col form-group">
+                <select type="text" class="form-control" name="age" id="age" placeholder="Age" required>
+                    <option value=""> -- Select age -- </option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row p-2">
+            <div class="col form-group">
+                <input type="text" name="state" class="form-control" id="state" placeholder="State" required />
+            </div>
+            <div class="col form-group">
+                <input type="text" class="form-control" name="city" id="city" placeholder="City" required />
+            </div>
+            <div class="col form-group">
+                <input type="text" class="form-control" name="country" id="country" placeholder="Country"  />
+            </div>
+        </div>
+
+        <div class="form-row p-2">
+            <div class="col form-group">
+                <input type="text" name="pincode" class="form-control" id="pincode" placeholder="Pincode" required />
+            </div>
+            <div class="col form-group">
+                <input type="tel" class="form-control" name="phone" id="phone" placeholder="Phone"  />
+            </div>
+        </div>
+        <div class="form-row p-2">
+            <div class="col form-group">
+                <input type="email" name="email" class="form-control" id="email" placeholder="Email" required />
+            </div>
+            <div class="col form-group">
+                <div class="input-group">
+                    <input class="password-strength__input form-control" name="password-input" type="password" id="password-input" aria-describedby="passwordHelp" placeholder="Enter password" required />
+                    <div class="input-group-append">
+                        <button class="password-strength__visibility btn btn-outline-secondary" type="button"><span class="password-strength__visibility-icon" data-visible="hidden"><i class="fas fa-eye-slash"></i></span><span class="password-strength__visibility-icon js-hidden" data-visible="visible"><i class="fas fa-eye"></i></span></button>
+                    </div>
+                </div>
+                <small class="password-strength__error text-danger js-hidden">This symbol is not allowed!</small>
+                <div class="password-strength__bar progress-bar bg-danger" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+
+            </div>
+        </div>
+        <div class="text-center"><button type="submit" class="btn btn-primary">Register</button></div>
+    </form>
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        $(document).ready(function () {
+
+            // list of countries
+            $("#country").countrySelect({
+
+            });
+
+            // initialize phone number select
+            var input = document.querySelector("#phone");
+            window.intlTelInput(input, {
+                initialCountry: "auto",
+                geoIpLookup: function (success, failure) {
+                    $.get("https://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                        var countryCode = (resp && resp.country) ? resp.country : "us";
+                        success(countryCode);
+                    });
+                },
+                "nationalMode": true,
+                "separateDialCode": true
+            });
+
+
+            // age select.
+            $(function () {
+                var $select = $("#age");
+                for (i = 1; i <= 100; i++) {
+                    $select.append($('<option></option>').val(i).html(i))
+                }
+            });
+
+            // expandable inputs..
+            //$(function () {
+            //    $("#phone #country").expandable({
+            //        width:350,
+            //        duration: 300,
+            //    });
+            //});
+
+            // form validation...
+
+            $('#donor-registration-form').validate({
+
+                rules: {
+
+                    firstname: {
+                        required: true,
+                    },
+                    lastname: {
+                        required: true
+                    },
+                    middlename: {
+                        required: false
+                    },
+                    age: {
+                        required: true
+                    },
+                    state: {
+                        required: true
+                    },
+                    city: {
+                        required: true
+                    },
+                    pincode: {
+                        required: true
+                    },
+                    email: {
+                        required: true,
+                        email: true,
+                        remote: {
+                            url: "Home/CheckEmail",
+                            type: "post"
+                        }
+                    },
+                    password_input: {
+                        required:true
+                    }
+                },
+                messages: {
+                    email: {
+                        required: "Please enter your email address.",
+                        email: "Please enter a valid email address.",
+                        remote: "Email already in use!"
+                    }
+                },
+                submitHandler: function () {
+
+                    var firstname = $('#firstname').val();
+                    var lastname = $('#lastname').val();
+                    var phone = $('#phone').val();
+                    var email = $('#email').val();
+                    var password = $('#password_input').val();
+                    var age = $('#age').val();
+                   
+                    var empdata = {
+
+                        "FirstName": firstname,
+                        "LastName": lastname,
+                        "Phone": phone,
+                        "Email": email,
+                        "Password": password,
+                        "RoleType": roletype,
+                        "EmployeeLevel": employeeLevel,
+                        "BasePay": basepay,
+                        "Experience": experience
+                    };
+
+
+                    $.ajax({
+                        url: $('#addEmployeeUrl').val(),
+                        type: 'POST',
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        beforeSend: function () {
+                            $("#add_employee_form")[0].reset();
+                            $('#add_employee_modal').modal('hide');
+                        },
+                        data: JSON.stringify(empdata),
+                        success: function (response) {
+                            console.log(response);
+
+                            var table = $('#addEmployeeDataTable').DataTable();
+                            table.draw();
+
+                            if (response.message == "success") {
+
+                                
+                            }
+                            else {
+                                
+
+
+                            }
+                        },
+                        error: function () {
+                           
+                        }
+                    });
+                }
+
+
+            });
+
+        });
+
+    </script>
+    <style>
+        .password-strength {
+            box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        .js-hidden {
+            display: none;
+        }
+
+        .error {
+            color:red;
+            font-size:small;
+        }
+    </style>
+
+
+
+}
